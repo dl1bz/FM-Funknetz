@@ -40,9 +40,6 @@ tr:nth-child(even) { background-color: #D6EEEE; }
 // check if PHP > 7.0.0, older versions not usable
 if ( !version_compare(phpversion(), '7.0.0', '>=')) { die("ERROR: PHP version ".PHP_VERSION." too old.\n"); }
 
-// add statistics (1) or not (0)
-define("STATISTICS", 1);
-
 // define URL SVXReflector for status pull
 $url="https://status.thueringen.link";
 
