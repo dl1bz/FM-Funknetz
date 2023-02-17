@@ -33,7 +33,7 @@ tr:nth-child(even) { background-color: #D6EEEE; }
 
 <?php
 
-// V1.0
+// V1.1
 // (C) 2023 by Heiko Amft, DL1BZ
 // requires PHP > 7.0.0 and php-curl and php-xml
 
@@ -170,7 +170,7 @@ echo "<th style=\"width:10%\">Default TG</th>";
 
 foreach ($repeater['repeater'] as $key =>$value)
    {
-      echo "<TR>"._show($key),_show($repeater['repeater'][$key]['nodeLocation']),_show($repeater['repeater'][$key]['TXFREQ'],c),_show($repeater['repeater'][$key]['CTCSS'],c),_show($repeater['repeater'][$key]['DefaultTG'],c)."</TR>";
+      echo "<TR>"._show($key,l),_show($repeater['repeater'][$key]['nodeLocation'],l),_show($repeater['repeater'][$key]['TXFREQ'],c),_show($repeater['repeater'][$key]['CTCSS'],c),_show($repeater['repeater'][$key]['DefaultTG'],c)."</TR>";
    }
 
 echo "</table>";
