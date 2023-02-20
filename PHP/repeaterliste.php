@@ -1,3 +1,5 @@
+<?php ?>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" lang="en">
@@ -22,6 +24,16 @@
 table {background-color: #F1F1F1; }
 th, td { border: 1px solid black; }
 tr:nth-child(even) { background-color: #D6EEEE; }
+button {
+  background-color: orange;
+  border-radius: 15px;
+  padding: 5px 15px;
+  text-align: center;
+  font-size: 16px;
+  font-family: monospace;
+  font-weight: normal;
+  font-style: normal;
+}
 </style>
 
 </head>
@@ -39,6 +51,9 @@ tr:nth-child(even) { background-color: #D6EEEE; }
 
 // check if PHP > 7.0.0, older versions not usable
 if ( !version_compare(phpversion(), '7.0.0', '>=')) { die("ERROR: PHP version ".PHP_VERSION." too old.\n"); }
+
+// add statistics (1) or not (0)
+define("STATISTICS", 1);
 
 // define URL SVXReflector for status pull
 $url="https://status.thueringen.link";
@@ -81,13 +96,55 @@ if ($url!="")
 
       // define new array
       $repeater=[];
+
       // init counter
       $counter = 0;
+
+      // Change the line below to your timezone!
+      date_default_timezone_set('Europe/Berlin');
+      $date = date('d.m.Y H:i', time());
+
+      if (isset($_REQUEST['select']))
+         {
+            $auswahl = $_REQUEST['select'];
+         }
+      else
+         {
+            $auswahl = "ALL";
+         }
+
+      switch($auswahl)
+         {
+
+            case 'HS':
+            $suchmuster='/^[D][A|C-L|N|Q-Z][0-9][A-Z]*/m';
+            $topic = "<H2>FM-Funknetz - Hotspots (nur DL): ";
+            break;
+
+            case 'NODES':
+            $suchmuster='/^[0-9|A-S|U-W|Y][A-Z][0-9][A-Z]*/m';
+            $topic = "<H2>FM-Funknetz - Nodes (ohne Bridges): ";
+            break;
+
+            case 'DL-RPTR':
+            $suchmuster='/^[D][B|M|O|P][0][A-Z][A-Z]*/m';
+            $topic = "<H2>FM-Funknetz - Repeater (nur DL): ";
+            break;
+
+            default:
+            // $suchmuster='/^[0-9|A-S|Y][A-Z][0-9][A-Z]*/m';
+            $suchmuster='/^[0-9|A-Z]*/m';
+            $topic = "<H2>FM-Funknetz - Nodes (inkl. Bridges): ";
+            break;
+         }
+
+      // Filter DB0/DM0/DO0/DP0 with RegEx
+      // $suchmuster='/[D][B|M|O|P][0][A-Z][A-Z]*/m';
+
       // loop through array, callsigns as key
       foreach ($nodes['nodes'] as $key =>$value)
          {
-            // Filter DB0/DM0/DO0/DP0 with RegEx
-            if (preg_match('/[D][B|M|O|P][0][A-Z][A-Z]*/m' , strtoupper($key)))
+               if (preg_match($suchmuster, strtoupper($key)))
                {
                   //  $counter++;
                   // add nodeLocation to new array
@@ -104,7 +161,7 @@ if ($url!="")
                   else
                      {
                         // otherwise we define a NULL string for prevent PHP errors undefined index
-                        $repeater['repeater'][$key]['nodeLocation'] = "<i>Angabe fehlt</i>";
+                        $repeater['repeater'][$key]['nodeLocation'] = "<i><font color=\"red\">Angabe fehlt</font></i>";
                      }
                   // add DefaultTG to new array
                   // check if value exists and Default TG > 0
@@ -123,7 +180,7 @@ if ($url!="")
                      }
                   else
                      {
-                        $repeater['repeater'][$key]['TXFREQ'] = "<i>Angabe fehlt</i>";
+                        $repeater['repeater'][$key]['TXFREQ'] = "<i><font color=\"red\">Angabe fehlt</font></i>";
                      }
                   if (isset($nodes['nodes'][$key]['CTCSS']) && ($nodes['nodes'][$key]['CTCSS'] != "0"))
                      {
@@ -153,11 +210,19 @@ function _show($data,$direction)
       return ($_line);
    }
 
-// Change the line below to your timezone!
-date_default_timezone_set('Europe/Berlin');
-$date = date('d.m.Y H:i', time());
+// echo "<H2>FM-Funknetz - &Ouml;ffentliche Repeater online: ".$counter."<BR>Stand: ".$date." Uhr</H2>";
+// echo "<H2>FM-Funknetz - Nodes (ohne Bridges): ".$counter."<BR>Stand: ".$date." Uhr</H2>";
 
-echo "<H2>FM-Funknetz - &Ouml;ffentliche Repeater online: ".$counter."<BR>Stand: ".$date." Uhr</H2>";
+echo $topic.$counter."<BR>Stand: ".$date." Uhr</H2>";
+
+echo "<form>";
+echo "<button type=\"submit\" name=\"select\" value=\"ALL\">Alles anzeigen</button>";
+echo "<button type=\"submit\" name=\"select\" value=\"NODES\">Alle Nodes (ohne Bridges) anzeigen</button>";
+echo "<button type=\"submit\" name=\"select\" value=\"DL-RPTR\">Alle Repeater (DB0/DM0/DO0/DP0) anzeigen</button>";
+echo "<button type=\"submit\" name=\"select\" value=\"HS\">Alle Hotspots (nur DL) anzeigen</button>";
+echo "</form>";
+
+echo "<p>";
 
 echo "<table style=\"width:1380px\">";
 
