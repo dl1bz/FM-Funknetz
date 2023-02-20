@@ -128,8 +128,8 @@ if ($url!="")
             break;
 
             case 'DL-RPTR':
-            $suchmuster='/D[B|M|O|P]0[A-Z]/m';
-            $topic = "<H2>FM-Funknetz - Repeater (nur DL): ";
+            $suchmuster='/D[B|M|O|P]0[A-Z]|OE[0-9]X/m';
+            $topic = "<H2>FM-Funknetz - Repeater: ";
             break;
 
             default:
@@ -219,7 +219,7 @@ echo $topic.$counter."<BR>Stand: ".$date." Uhr</H2>";
 echo "<form>";
 echo "<button type=\"submit\" name=\"select\" value=\"ALL\">Alles anzeigen</button>";
 echo "<button type=\"submit\" name=\"select\" value=\"NODES\">Alle Nodes (ohne Bridges) anzeigen</button>";
-echo "<button type=\"submit\" name=\"select\" value=\"DL-RPTR\">Alle Repeater (DB0/DM0/DO0/DP0) anzeigen</button>";
+echo "<button type=\"submit\" name=\"select\" value=\"DL-RPTR\">Alle Repeater anzeigen</button>";
 echo "<button type=\"submit\" name=\"select\" value=\"HS\">Alle Hotspots (nur DL) anzeigen</button>";
 echo "</form>";
 
