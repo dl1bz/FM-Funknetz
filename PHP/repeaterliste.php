@@ -117,23 +117,24 @@ if ($url!="")
          {
 
             case 'HS':
-            $suchmuster='/^[D][A|C-L|N|Q-Z][0-9][A-Z]*/m';
+            $suchmuster='/D[A|C-L|N|Q-Z][0-9][A-Z]|DB[1-9][A-Z]|DM[1-9][A-Z]|DO[1-9][A-Z]|DP[1-9][A-Z]/m';
+            // $suchmuster='/^[D][A|C-L|N|Q-Z][0-9][A-Z]*/m';
             $topic = "<H2>FM-Funknetz - Hotspots (nur DL): ";
             break;
 
             case 'NODES':
-            $suchmuster='/^[0-9|A-S|U-W|Y][A-Z][0-9][A-Z]*/m';
+            $suchmuster='/[0-9|A-S|U-W|Y][A-Z][0-9][A-Z]/m';
             $topic = "<H2>FM-Funknetz - Nodes (ohne Bridges): ";
             break;
 
             case 'DL-RPTR':
-            $suchmuster='/^[D][B|M|O|P][0][A-Z][A-Z]*/m';
+            $suchmuster='/D[B|M|O|P]0[A-Z]/m';
             $topic = "<H2>FM-Funknetz - Repeater (nur DL): ";
             break;
 
             default:
             // $suchmuster='/^[0-9|A-S|Y][A-Z][0-9][A-Z]*/m';
-            $suchmuster='/^[0-9|A-Z]*/m';
+            $suchmuster='/[0-9|A-Z|a-z]/m';
             $topic = "<H2>FM-Funknetz - Nodes (inkl. Bridges): ";
             break;
          }
