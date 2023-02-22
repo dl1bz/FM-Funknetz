@@ -21,7 +21,7 @@
 <?php echo ("<title>Dashboard FM-Funknetz</title>"); ?>
 
 <style>
-table {background-color: #F1F1F1; }
+table {background-color: #F1F1F1; border-collapse: collapse; padding: 2px; }
 th, td { border: 1px solid black; }
 tr:nth-child(even) { background-color: #D6EEEE; }
 button {
@@ -38,14 +38,18 @@ button {
 
 </head>
 
-<body style="background-color: #e1e1e1;font: 16pt monospace;">
+<?php 
+// echo "<body style=\"background-color: #e1e1e1;font: 16pt monospace;\">";
+echo "<body style=\"background-color: #fec456;font: 16pt monospace;\">";
+?>
+
 <script type="text/javascript">
    setTimeout(() => { document.location.reload(); }, 1200000);
 </script>
 
 <?php
 
-// V1.1
+// V1.2
 // (C) 2023 by Heiko Amft, DL1BZ
 // requires PHP > 7.0.0 and php-curl and php-xml
 
@@ -99,6 +103,7 @@ if ($url!="")
 
       // init counter
       $counter = 0;
+      $counter_TG1 = 0;
 
       // Change the line below to your timezone!
       date_default_timezone_set('Europe/Berlin');
@@ -128,7 +133,7 @@ if ($url!="")
             break;
 
             case 'DL-RPTR':
-            $suchmuster='/D[B|M|O|P]0[A-Z]|OE[0-9]X/m';
+            $suchmuster='/^D[B|M|O|P]0[A-Z]{2,3}$|^D[B|M|O|P]0[A-Z]{2,3}-[A-Z][^V]\\D*$|^D[B|M|O|P]0[A-Z]{2,3}-[L|R]$|^OE[0-9]X[A-Z]{1,2}$/m';
             $topic = "<H2>FM-Funknetz - Repeater: ";
             break;
 
@@ -186,10 +191,35 @@ if ($url!="")
                   if (isset($nodes['nodes'][$key]['CTCSS']) && ($nodes['nodes'][$key]['CTCSS'] != "0"))
                      {
                         $repeater['repeater'][$key]['CTCSS'] = $nodes['nodes'][$key]['CTCSS'];
+                        $repeater['repeater'][$key]['CTCSS'] = trim(str_replace(",",".",$repeater['repeater'][$key]['CTCSS']));
+                        $repeater['repeater'][$key]['CTCSS'] = strtoupper($repeater['repeater'][$key]['CTCSS']);
+                        $repeater['repeater'][$key]['CTCSS'] = trim(str_replace("HZ","",$repeater['repeater'][$key]['CTCSS']));
+                        $repeater['repeater'][$key]['CTCSS'] = trim(str_replace("RX/TX","",$repeater['repeater'][$key]['CTCSS']));
+                        $repeater['repeater'][$key]['CTCSS'] = trim(str_replace("NONE","",$repeater['repeater'][$key]['CTCSS']));
+                        if (strpos($repeater['repeater'][$key]['CTCSS'],"DCS") === false )
+                           {
+                              $repeater['repeater'][$key]['CTCSS'] = number_format(floatval($repeater['repeater'][$key]['CTCSS']), 1);
+                              if ($repeater['repeater'][$key]['CTCSS'] < 67) 
+                                 {
+                                    $repeater['repeater'][$key]['CTCSS'] = NULL;
+                                 }
+                           }
                      }
                   else
                      {
                         $repeater['repeater'][$key]['CTCSS'] = NULL;
+                     }
+                  if (isset($nodes['nodes'][$key]['monitoredTGs']) && ($nodes['nodes'][$key]['monitoredTGs'] != ""))
+                     {
+                        $repeater['repeater'][$key]['monitoredTGs'] = implode("/", $nodes['nodes'][$key]['monitoredTGs']);
+                           if (substr($repeater['repeater'][$key]['monitoredTGs'],0,2) == '1/')
+                              {
+                                 $counter_TG1++;
+                              }
+                     }
+                  else
+                     {
+                        $repeater['repeater'][$key]['monitoredTGs'] = NULL;
                      }
                   $counter++;
                }
@@ -197,6 +227,8 @@ if ($url!="")
 
 // correct counter value
 $counter=$counter-1;
+$counter_TG1=$counter_TG1-1;
+$prozent=round((100*$counter_TG1)/$counter);
 
 function _show($data,$direction)
    {
@@ -214,7 +246,14 @@ function _show($data,$direction)
 // echo "<H2>FM-Funknetz - &Ouml;ffentliche Repeater online: ".$counter."<BR>Stand: ".$date." Uhr</H2>";
 // echo "<H2>FM-Funknetz - Nodes (ohne Bridges): ".$counter."<BR>Stand: ".$date." Uhr</H2>";
 
-echo $topic.$counter."<BR>Stand: ".$date." Uhr</H2>";
+if (isset($_REQUEST['select']) && $_REQUEST['select'] == "DL-RPTR")
+   {
+      echo $topic.$counter." (inkl. TG1 im Monitor: ".$counter_TG1." von ".$counter." &wedgeq; ".$prozent."%)<BR>Stand: ".$date." Uhr</H2>";
+   }
+else
+   {
+      echo $topic.$counter."<BR>Stand: ".$date." Uhr</H2>";
+   }
 
 echo "<form>";
 echo "<button type=\"submit\" name=\"select\" value=\"ALL\">Alles anzeigen</button>";
@@ -225,18 +264,26 @@ echo "</form>";
 
 echo "<p>";
 
-echo "<table style=\"width:1380px\">";
+echo "<table style=\"width:100%\">";
 
 // echo "<th style=\"width:10%\">Nr.</th>";
-echo "<th style=\"width:10%\">Node</th>";
-echo "<th style=\"width:40%\">Location</th>";
-echo "<th style=\"width:20%\">TX Frequenz (MHz)</th>";
-echo "<th style=\"width:20%\">CTCSS</th>";
-echo "<th style=\"width:10%\">Default TG</th>";
+echo "<th style=\"width:6%\">Node</th>";
+echo "<th style=\"width:22%\">Location</th>";
+echo "<th style=\"width:8%\">TX Frequenz (MHz)</th>";
+echo "<th style=\"width:7%\">CTCSS<BR>(Hz)</th>";
+echo "<th style=\"width:7%\">Default TG</th>";
+echo "<th style=\"width:40%\">Monitor TGs (gr&uuml;n = inkl. TG1)</th>";
 
 foreach ($repeater['repeater'] as $key =>$value)
    {
-      echo "<TR>"._show($key,l),_show($repeater['repeater'][$key]['nodeLocation'],l),_show($repeater['repeater'][$key]['TXFREQ'],c),_show($repeater['repeater'][$key]['CTCSS'],c),_show($repeater['repeater'][$key]['DefaultTG'],c)."</TR>";
+      if ((substr($repeater['repeater'][$key]['monitoredTGs'],0,2) == '1/') && (isset($_REQUEST['select']) && $_REQUEST['select'] == "DL-RPTR"))
+         {
+            echo "<TR style=\"background-color:lightgreen\">"._show($key,l),_show($repeater['repeater'][$key]['nodeLocation'],l),_show($repeater['repeater'][$key]['TXFREQ'],c),_show($repeater['repeater'][$key]['CTCSS'],c),_show($repeater['repeater'][$key]['DefaultTG'],c),_show($repeater['repeater'][$key]['monitoredTGs'],c)."</TR>";
+         }
+      else
+         {
+            echo "<TR>"._show($key,l),_show($repeater['repeater'][$key]['nodeLocation'],l),_show($repeater['repeater'][$key]['TXFREQ'],c),_show($repeater['repeater'][$key]['CTCSS'],c),_show($repeater['repeater'][$key]['DefaultTG'],c),_show($repeater['repeater'][$key]['monitoredTGs'],c)."</TR>";
+         }
    }
 
 echo "</table>";
